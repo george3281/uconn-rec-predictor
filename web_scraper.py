@@ -16,23 +16,57 @@ from webdriver_manager.chrome import ChromeDriverManager
 # import requests
 # from bs4 import BeautifulSoup
 
-TOTAL_CAPACITY = 1000
+URL = 'https://app.safespace.io/api/display/live-occupancy/86fb9e11?view=percent'
+SEMESTERS = {
+    'summer_2025': {'start': '2025-05-20', 'end': '2025-08-15'},
+    'fall_2025': {'start': '2025-08-25', 'end': '2025-12-15'},
+    'spring_2026': {'start': '2026-01-20', 'end': '2026-05-10'},
+    # add more semesters as needed
+}
+WEATHER = {
+    'Sunny': 1,
+    'Partly Cloudy': 2,
+    'Cloudy': 3,
+    'Rain': 4,
+    'Thunderstorm': 5,
+    'Snow': 6,
+    'Fog': 7,
+    'Clear' : 8   
+}
 
-def fetch_timestamp() -> str:
+def fetch_timestamp() -> list[str]:
     """Fetch the current timestamp."""
-    return datetime.datetime.now().strftime('%m-%d %H:%M')
+    return datetime.datetime.now().strftime('%Y-%m-%d_%H:%M %H %w %j').split()
 
 async def fetch_weather(location: str = 'Storrs CT') -> str:
     """Fetch the current weather for a given location."""
     async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
         weather = await client.get(location)
-    return weather.description, weather.feels_like, weather.temperature
+    return [WEATHER.get(weather.description), weather.temperature]
     
+def get_current_semester() -> str:
+    """Get the current semester based on the current date."""
+    today = datetime.date.today()
+    for semester, dates in SEMESTERS.items():
+        start = datetime.datetime.strptime(dates['start'], '%Y-%m-%d').date()
+        end = datetime.datetime.strptime(dates['end'], '%Y-%m-%d').date()
+        if start <= today <= end:
+            return semester
+    return 0
+
+def get_semester_progress():
+    current_semester = get_current_semester()
+    if current_semester:
+        today = datetime.date.today()
+        start = datetime.datetime.strptime(SEMESTERS[current_semester]['start'], '%Y-%m-%d').date()
+        end = datetime.datetime.strptime(SEMESTERS[current_semester]['end'], '%Y-%m-%d').date()
+        total_days = (end - start).days
+        elapsed_days = (today - start).days
+        return "%0.2f" % (elapsed_days / total_days)
+    return 0
 
 def fetch_occupancy() -> int:
-    """Fetch the current occupancy of UConn Rec."""
-    url = 'https://app.safespace.io/api/display/live-occupancy/86fb9e11'
-    
+    """Fetch the current occupancy of UConn Rec."""    
     # this method doesn't work because the content is loaded dynamically.
     # response = requests.get(url)
     # soup = BeautifulSoup(response.text, 'html.parser')
@@ -41,23 +75,34 @@ def fetch_occupancy() -> int:
     
     # instead, we can use selenium to get the data.
     driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
-    driver.get(url)
+    driver.get(URL)
 
     # wait for the element to be present
     try:
-        occupants_elem = WebDriverWait(driver, 10).until(
-            EC.visibility_of_element_located((By.ID, 'occupants'))
+        occupants_elem = WebDriverWait(driver, 15).until(
+            EC.visibility_of_element_located((By.ID, 'occupancyPct'))
         )
         occupants = occupants_elem.text
-        return occupants, f'{int(occupants) / TOTAL_CAPACITY * 100}%'
+        return "%0.2f" % (int(occupants.strip('%')) / 100)
     finally:
         driver.quit()
 
-if __name__ == "__main__":
+def fetch_data() -> tuple[str, str, int]:
+    """Fetch timestamp, weather, and occupancy data."""
     timestamp = fetch_timestamp()
     weather = asyncio.run(fetch_weather())
     occupancy = fetch_occupancy()
+    semester_progress = get_semester_progress()
+    return {
+        'timestamp': timestamp[0],
+        'hour': timestamp[1],
+        'day_of_week': timestamp[2],
+        'day_of_year': timestamp[3],
+        'semester_progress': semester_progress,
+        'weather': weather[0],
+        'temperature': weather[1],
+        'occupancy': occupancy
+    }
 
-    print(f"Timestamp: {timestamp}")
-    print(f"Weather: {weather}")
-    print(f"UConn Rec Occupancy: {occupancy}")
+if __name__ == "__main__":
+    print(fetch_data())
