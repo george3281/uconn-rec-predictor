@@ -2,10 +2,9 @@
 # Created August 11 2025 - George Ji
 
 import asyncio
-
 import datetime
 import python_weather
-
+from config import URL, SEMESTERS, WEATHER
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
@@ -16,24 +15,6 @@ from webdriver_manager.chrome import ChromeDriverManager
 # import requests
 # from bs4 import BeautifulSoup
 
-URL = 'https://app.safespace.io/api/display/live-occupancy/86fb9e11?view=percent'
-SEMESTERS = {
-    'summer_2025': {'start': '2025-05-20', 'end': '2025-08-15'},
-    'fall_2025': {'start': '2025-08-25', 'end': '2025-12-15'},
-    'spring_2026': {'start': '2026-01-20', 'end': '2026-05-10'},
-    # add more semesters as needed
-}
-WEATHER = {
-    'Sunny': 1,
-    'Partly Cloudy': 2,
-    'Cloudy': 3,
-    'Rain': 4,
-    'Thunderstorm': 5,
-    'Snow': 6,
-    'Fog': 7,
-    'Clear' : 8   
-}
-
 def fetch_timestamp() -> list[str]:
     """Fetch the current timestamp."""
     return datetime.datetime.now().strftime('%Y-%m-%d_%H:%M %H %w %j').split()
@@ -42,7 +23,9 @@ async def fetch_weather(location: str = 'Storrs CT') -> str:
     """Fetch the current weather for a given location."""
     async with python_weather.Client(unit=python_weather.IMPERIAL) as client:
         weather = await client.get(location)
-    return [WEATHER.get(weather.description), weather.temperature]
+    return [WEATHER.get(weather.description, 0), weather.temperature, weather.description]
+    
+
     
 def get_current_semester() -> str:
     """Get the current semester based on the current date."""
@@ -94,10 +77,8 @@ def fetch_data() -> tuple[str, str, int]:
     occupancy = fetch_occupancy()
     semester_progress = get_semester_progress()
     return {
-        'timestamp': timestamp[0],
         'hour': timestamp[1],
         'day_of_week': timestamp[2],
-        'day_of_year': timestamp[3],
         'semester_progress': semester_progress,
         'weather': weather[0],
         'temperature': weather[1],
