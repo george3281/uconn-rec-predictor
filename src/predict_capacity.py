@@ -4,8 +4,11 @@ import web_scraper as wb
 
 def predict_occupancy(hour, day_of_week, semester_progress, weather, temperature):
    # If outside operating hours, return 0 occupancy.
-   if int(hour) < 6 or int(hour) > 22:
+   isweekend = day_of_week in (5, 6)  # Saturday or Sunday
+   if isweekend and (int(hour) < 6 or int(hour) > 22):
        return 0.0
+   if not isweekend and (int(hour) < 10 or int(hour) > 18):
+         return 0.0
    
    # Load saved components
    model = joblib.load('models/model.pkl')
