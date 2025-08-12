@@ -5,12 +5,14 @@ import csv
 import os
 import time
 import datetime
-import web_scraper as web_scraper
+import web_scraper as wb
 
-def record_data(filename: str = 'data/rec_data.csv'):
+# run: py src/record_data.py
+
+def record_data(filename: str = 'rec_data.csv'):
     """Record data fetched from web_scraper to a CSV file."""
     start = time.time()
-    data = web_scraper.fetch_data()
+    data = wb.fetch_data()
     
     os.makedirs('data', exist_ok=True)
     filepath = os.path.join('data', filename)
@@ -45,5 +47,9 @@ def automate_recording(interval: int = 3600, filename: str = 'rec_data.csv'):
 
 
 if __name__ == "__main__":
-    automate_recording()
+    r = input("Press r to record data once, or any other key to start automated recording:")
+    if r.lower() == 'r':
+        record_data()
+    else:
+        automate_recording()
 

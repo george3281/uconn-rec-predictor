@@ -1,3 +1,6 @@
+# config.py
+# Created August 11 2025 - George Ji
+
 URL='https://app.safespace.io/api/display/live-occupancy/86fb9e11?view=percent'
 SEMESTERS={
     'summer_2025': {'start': '2025-05-20', 'end': '2025-08-15'},
@@ -15,4 +18,4 @@ WEATHER={
     'Fog': 7,
     'Clear': 8   
 }
-DATASET = 'data/llm_data.csv'
+DATASET = 'data/rec_data.csv'
