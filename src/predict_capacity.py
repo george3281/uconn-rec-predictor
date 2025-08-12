@@ -3,7 +3,9 @@ import asyncio
 import web_scraper as wb
 
 def predict_occupancy(hour, day_of_week, semester_progress, weather, temperature):
-   # TODO: Add logic to handle when Rec is closed.
+   # If outside operating hours, return 0 occupancy.
+   if int(hour) < 6 or int(hour) > 22:
+       return 0.0
    
    # Load saved components
    model = joblib.load('models/model.pkl')
