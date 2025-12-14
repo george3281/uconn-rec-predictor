@@ -4,7 +4,7 @@
 URL='https://app.safespace.io/api/display/live-occupancy/86fb9e11?view=percent'
 SEMESTERS={
     'summer_2025': {'start': '2025-05-20', 'end': '2025-08-15'},
-    'fall_2025': {'start': '2025-08-25', 'end': '2025-12-15'},
+    'fall_2025': {'start': '2025-08-25', 'end': '2025-12-13'},
     'spring_2026': {'start': '2026-01-20', 'end': '2026-05-10'},
     # add more semesters as needed
 }
@@ -19,3 +19,4 @@ WEATHER={
     'Clear': 8   
 }
 DATASET = 'data/rec_data.csv'
+SAVE_TO = 'rec_data.csv'

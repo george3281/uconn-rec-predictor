@@ -6,10 +6,11 @@ import os
 import time
 import datetime
 import web_scraper as wb
+from config import SAVE_TO
 
 # run: py src/record_data.py
 
-def record_data(filename: str = 'rec_data.csv'):
+def record_data(filename: str = SAVE_TO):
     """Record data fetched from web_scraper to a CSV file."""
     start = time.time()
     data = wb.fetch_data()

@@ -77,7 +77,7 @@ def fetch_data() -> tuple[str, str, int]:
     occupancy = fetch_occupancy()
     semester_progress = get_semester_progress()
     return {
-        'hour': timestamp[1],
+        'hour': timestamp[1], 
         'day_of_week': timestamp[2],
         'semester_progress': semester_progress,
         'weather': weather[0],
